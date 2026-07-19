@@ -1,8 +1,8 @@
 {
     "name": "pikbdesigns/laravel-full-translation",
     "type": "library",
-    "description": "URL-based localization for Laravel without rewriting every route",
-    "keywords": ["laravel", "localization", "translation", "multilingual", "i18n"],
+    "description": "Laravel Full Translation — a Laravel 13 package for URL-based multilingual routing (/en/, /es/) with automatic locale detection, translated route slugs, a built-in string scanner, and Artisan commands to export and audit your app's translation completeness. No manual route duplication required.",
+    "keywords": ["laravel", "localization", "laravel-localization", "translation", "multilingual", "i18n"],
     "license": "MIT",
     "authors": [
         {

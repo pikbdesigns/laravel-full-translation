@@ -6,8 +6,8 @@ Add locale prefixes (`/en/about`, `/es/about`) to your Laravel app with minimal 
 
 ## Requirements
 
-- PHP 8.4+
-- Laravel 13
+- PHP 8.2+
+- Laravel 11+
 
 ## Installation
 
