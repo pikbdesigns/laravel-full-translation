@@ -4,6 +4,39 @@ URL-based multilingual support for Laravel without rewriting every route.
 
 Add locale prefixes (`/en/about`, `/es/about`) to your Laravel app with minimal setup. The package handles locale detection (URL, session, cookie, browser `Accept-Language`), route registration, URL generation, and translation file management.
 
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Locale Settings](#locale-settings)
+  - [Rich Locale Metadata](#rich-locale-metadata)
+  - [Detection & Persistence](#detection--persistence)
+  - [URL Behavior](#url-behavior)
+  - [Scanner Settings](#scanner-settings)
+  - [Export Settings](#export-settings)
+- [Middleware](#middleware)
+  - [Global middleware (bootstrap/app.php)](#global-middleware-bootstrapappphp)
+  - [Recommended order](#recommended-order)
+  - [Ignoring URLs and methods](#ignoring-urls-and-methods)
+- [Route Registration](#route-registration)
+  - [Route::localized() macro](#routelocalized-macro)
+  - [hide_default_locale behavior](#hide_default_locale-behavior)
+  - [Manual approach](#manual-approach)
+- [Helper Functions](#helper-functions)
+- [Facade](#facade)
+- [Language Switcher](#language-switcher)
+  - [Custom ordering](#custom-ordering)
+- [Translation Export & Inspect Commands](#translation-export--inspect-commands)
+  - [Export translations](#export-translations)
+  - [Inspect translations](#inspect-translations)
+- [Translation File Structure](#translation-file-structure)
+  - [JSON files](#json-files)
+  - [Route translations](#route-translations)
+  - [Manual strings](#manual-strings)
+- [Testing](#testing)
+- [License](#license)
+
 ## Requirements
 
 - PHP 8.2+
