@@ -31,3 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Support for Laravel 11, 12, and 13
 - Integration tests covering all middleware, facades, routes, scanner, and CLI commands
 - README with full documentation and table of contents
+
+## [0.1.1] - 2026-07-21
+
+### Fixed
+
+- `default_locale` config now correctly reads from `config('app.locale')` instead of being hardcoded to `'en'`
