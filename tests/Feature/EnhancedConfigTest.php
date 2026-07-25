@@ -1,7 +1,6 @@
 <?php
 
 use Pikbdesigns\FullTranslation\Facades\FullLocalization;
-use Pikbdesigns\FullTranslation\TranslationManager;
 
 it('returns locale codes from rich metadata config', function () {
     config(['full-translation.supported_locales' => [

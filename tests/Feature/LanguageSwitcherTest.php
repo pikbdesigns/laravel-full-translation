@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 it('renders the language switcher component', function () {
     app()->setLocale('en');
     $html = view('full-translation::language-switcher')->render();

@@ -5,7 +5,7 @@ use Pikbdesigns\FullTranslation\Routing\RouteStringTranslator;
 beforeEach(function () {
     // Create lang/es/routes.php fixture
     $langPath = lang_path('es');
-    if (!is_dir($langPath)) {
+    if (! is_dir($langPath)) {
         mkdir($langPath, 0755, true);
     }
     file_put_contents($langPath.'/routes.php', "<?php\n\nreturn [\n    'about' => 'sobre-nosotros',\n    'contact' => 'contacto',\n];\n");

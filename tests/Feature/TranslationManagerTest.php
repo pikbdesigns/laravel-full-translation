@@ -1,6 +1,5 @@
 <?php
 
-use Pikbdesigns\FullTranslation\Facades\FullLocalization;
 use Pikbdesigns\FullTranslation\TranslationManager;
 
 it('resolves the TranslationManager from the container', function () {

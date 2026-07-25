@@ -24,7 +24,7 @@ class RouteStringTranslator
     {
         $file = lang_path($locale.'/routes.php');
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             return [];
         }
 

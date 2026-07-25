@@ -24,7 +24,7 @@ use Pikbdesigns\FullTranslation\TranslationManager;
  * @method static ?string getTranslatedRoute(string $route, string $locale)
  * @method static string mapLocale(string $locale)
  *
- * @see \Pikbdesigns\FullTranslation\TranslationManager
+ * @see TranslationManager
  */
 class FullLocalization extends Facade
 {

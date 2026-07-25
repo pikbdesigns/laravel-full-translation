@@ -7,17 +7,9 @@
     "authors": [
         {
             "name": "pikbdesigns",
-            "email": "pikbdesigns@users.noreply.github.com",
-            "homepage": "https://iperlinks.com",
-            "role": "Developer"
+            "email": "pikbdesigns@users.noreply.github.com"
         }
     ],
-    "homepage": "https://iperlinks.com",
-    "support": {
-        "issues": "https://github.com/pikbdesigns/laravel-full-translation/issues",
-        "source": "https://github.com/pikbdesigns/laravel-full-translation",
-        "docs": "https://github.com/pikbdesigns/laravel-full-translation/blob/main/README.md"
-    },
     "require": {
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0|^13.0",

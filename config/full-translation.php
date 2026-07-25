@@ -7,7 +7,7 @@ return [
     | Default Locale
     |--------------------------------------------------------------------------
     */
-    'default_locale' => config('app.locale', 'en'),
+    'default_locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -20,16 +20,16 @@ return [
     | Or an associative array with rich metadata:
     |   'en' => ['name' => 'English', 'script' => 'Latn', 'native' => 'English', 'regional' => 'en_GB'],
     |   'es' => ['name' => 'Spanish', 'script' => 'Latn', 'native' => 'español', 'regional' => 'es_ES'],
-    | 
+    |
     | Uncomment the languages that your site supports - or add new ones.
     |
     | When using rich metadata, the 'name' key is used for display purposes.
     | The 'native' key is the language name in its own script.
     | The 'regional' key is the full locale code for PHP's locale functions.
-    | 
+    |
     */
     // 'supported_locales' => ['en', 'fr', 'es'],
-    
+
     'supported_locales' => [
         // 'ace'         => ['name' => 'Achinese',               'script' => 'Latn', 'native' => 'Aceh', 'regional' => ''],
         // 'af'          => ['name' => 'Afrikaans',              'script' => 'Latn', 'native' => 'Afrikaans', 'regional' => 'af_ZA'],
@@ -72,7 +72,7 @@ return [
         // 'en-GB'       => ['name' => 'British English',        'script' => 'Latn', 'native' => 'British English', 'regional' => 'en_GB'],
         // 'en-CA'       => ['name' => 'Canadian English',       'script' => 'Latn', 'native' => 'Canadian English', 'regional' => 'en_CA'],
         // 'en-US'       => ['name' => 'U.S. English',           'script' => 'Latn', 'native' => 'U.S. English', 'regional' => 'en_US'],
-        'es'          => ['name' => 'Spanish',                'script' => 'Latn', 'native' => 'español', 'regional' => 'es_ES'],
+        'es' => ['name' => 'Spanish',                'script' => 'Latn', 'native' => 'español', 'regional' => 'es_ES'],
         // 'eo'          => ['name' => 'Esperanto',              'script' => 'Latn', 'native' => 'esperanto', 'regional' => ''],
         // 'eu'          => ['name' => 'Basque',                 'script' => 'Latn', 'native' => 'euskara', 'regional' => 'eu_ES'],
         // 'ewo'         => ['name' => 'Ewondo',                 'script' => 'Latn', 'native' => 'ewondo', 'regional' => ''],

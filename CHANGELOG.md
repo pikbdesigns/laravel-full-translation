@@ -1,8 +1,25 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.1.2] - 2026-07-25
+
+### Fixed
+
+- Route caching now works: replaced inline Closures in `Route::localized()` macro with named middleware classes (`SetDefaultLocale`, `UnlocalizedRedirect`, `RootRedirect`)
+- Added `detectLocale()` method to `LocalizationMiddlewareBase` for session/cookie/Accept-Language detection
+
+### Changed
+
+- `LocalizationServiceProvider` now registers middleware classes instead of Closures for route cache compatibility
+
+## [0.1.1] - 2026-07-21
+
+### Fixed
+
+- `default_locale` config now correctly reads from `config('app.locale')` instead of being hardcoded to `'en'`
 
 ## [0.1.0] - 2026-07-20
 
@@ -31,9 +48,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Support for Laravel 11, 12, and 13
 - Integration tests covering all middleware, facades, routes, scanner, and CLI commands
 - README with full documentation and table of contents
-
-## [0.1.1] - 2026-07-21
-
-### Fixed
-
-- `default_locale` config now correctly reads from `config('app.locale')` instead of being hardcoded to `'en'`

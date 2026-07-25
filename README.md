@@ -34,8 +34,7 @@ Add locale prefixes (`/en/about`, `/es/about`) to your Laravel app with minimal 
   - [JSON files](#json-files)
   - [Route translations](#route-translations)
   - [Manual strings](#manual-strings)
-- [Testing](#testing)
-- [License](#license)
+- [Testing](#testing)`r`n- [Changelog](#changelog)`r`n- [License](#license)
 
 ## Requirements
 
@@ -85,8 +84,8 @@ The published config lives at `config/full-translation.php`. All keys have sensi
 // Rich metadata
 'supported_locales' => [
     'en' => ['name' => 'English', 'script' => 'Latn', 'native' => 'English', 'regional' => 'en_GB'],
-    'es' => ['name' => 'Spanish', 'script' => 'Latn', 'native' => 'español', 'regional' => 'es_ES'],
-    'fr' => ['name' => 'French', 'script' => 'Latn', 'native' => 'Français', 'regional' => 'fr_FR'],
+    'es' => ['name' => 'Spanish', 'script' => 'Latn', 'native' => 'espaÃ±ol', 'regional' => 'es_ES'],
+    'fr' => ['name' => 'French', 'script' => 'Latn', 'native' => 'FranÃ§ais', 'regional' => 'fr_FR'],
 ],
 ```
 
@@ -278,7 +277,7 @@ A Blade component is included at `resources/views/language-switcher.blade.php`:
 @include('full-translation::language-switcher')
 ```
 
-It renders links for each supported locale (except the current one, shown as active text). When using rich locale metadata, it displays native language names (e.g., "Français" instead of "FR").
+It renders links for each supported locale (except the current one, shown as active text). When using rich locale metadata, it displays native language names (e.g., "FranÃ§ais" instead of "FR").
 
 You can publish and customize it:
 
@@ -394,6 +393,10 @@ These are automatically merged into translation files when `add_manual_strings` 
 ```bash
 composer test
 ```
+
+## Changelog
+
+Please see [CHANGELOG.md](CHANGELOG.md) for more information on recent changes.
 
 ## License
 

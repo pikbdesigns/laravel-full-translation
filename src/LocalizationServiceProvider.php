@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Pikbdesigns\FullTranslation\Console\ExportTranslationsCommand;
 use Pikbdesigns\FullTranslation\Console\InspectTranslationsCommand;
+use Pikbdesigns\FullTranslation\Http\Middleware\HideDefaultLocaleInUrl;
+use Pikbdesigns\FullTranslation\Http\Middleware\RootRedirect;
+use Pikbdesigns\FullTranslation\Http\Middleware\SetDefaultLocale;
+use Pikbdesigns\FullTranslation\Http\Middleware\SetLocale;
+use Pikbdesigns\FullTranslation\Http\Middleware\UnlocalizedRedirect;
 
 class LocalizationServiceProvider extends ServiceProvider
 {
@@ -28,92 +33,30 @@ class LocalizationServiceProvider extends ServiceProvider
             Route::macro('localized', function (callable $callback) {
                 $locales = app(TranslationManager::class)->getSupportedLocales();
                 $hideDefault = config('full-translation.hide_default_locale', false);
-                $defaultLocale = config('full-translation.default_locale', 'en');
 
-                $setLocale = 'Pikbdesigns\FullTranslation\Http\Middleware\SetLocale';
-                $hideDefaultLocale = 'Pikbdesigns\FullTranslation\Http\Middleware\HideDefaultLocaleInUrl';
+                $setLocale = SetLocale::class;
+                $hideDefaultLocale = HideDefaultLocaleInUrl::class;
+                $setDefaultLocale = SetDefaultLocale::class;
+                $unlocalizedRedirect = UnlocalizedRedirect::class;
+                $rootRedirect = RootRedirect::class;
 
                 if ($hideDefault) {
                     Route::group([
                         'prefix' => '',
                         'as' => 'localized.root.',
-                        'middleware' => [
-                            function ($request, $next) use ($defaultLocale) {
-                                app()->setLocale($defaultLocale);
-
-                                return $next($request);
-                            },
-                        ],
+                        'middleware' => [$setDefaultLocale],
                     ], function () use ($callback) {
                         $callback();
                     });
                 } else {
-                    $redirectToLocalized = function ($request, $next) use ($defaultLocale) {
-                        $manager = app(TranslationManager::class);
-                        $locale = $defaultLocale;
-
-                        if (config('full-translation.use_session', true) && session()->has('locale')) {
-                            $sessionLocale = session('locale');
-                            if ($manager->checkLocaleInSupportedLocales($sessionLocale)) {
-                                $locale = $sessionLocale;
-                            }
-                        }
-
-                        if ($locale === $defaultLocale && config('full-translation.use_cookie', true)) {
-                            $cookieLocale = $request->cookie(config('full-translation.cookie_name', 'locale'));
-                            if ($cookieLocale && $manager->checkLocaleInSupportedLocales($cookieLocale)) {
-                                $locale = $cookieLocale;
-                            }
-                        }
-
-                        if ($locale === $defaultLocale && config('full-translation.use_accept_language', true)) {
-                            $preferred = $request->getPreferredLanguage($manager->getSupportedLocales());
-                            if ($preferred) {
-                                $locale = $preferred;
-                            }
-                        }
-
-                        $path = $request->path();
-                        $target = $locale.($path ? '/'.$path : '/');
-
-                        $query = $request->getQueryString();
-
-                        return redirect('/'.$target.($query ? '?'.$query : ''));
-                    };
-
-                    Route::get('/', function () {
-                        $manager = app(TranslationManager::class);
-                        $locale = $manager->getDefaultLocale();
-
-                        if (config('full-translation.use_session', true) && session()->has('locale')) {
-                            $sessionLocale = session('locale');
-                            if ($manager->checkLocaleInSupportedLocales($sessionLocale)) {
-                                $locale = $sessionLocale;
-                            }
-                        }
-
-                        if ($locale === $manager->getDefaultLocale() && config('full-translation.use_cookie', true)) {
-                            $cookieLocale = request()->cookie(config('full-translation.cookie_name', 'locale'));
-                            if ($cookieLocale && $manager->checkLocaleInSupportedLocales($cookieLocale)) {
-                                $locale = $cookieLocale;
-                            }
-                        }
-
-                        if ($locale === $manager->getDefaultLocale() && config('full-translation.use_accept_language', true)) {
-                            $preferred = request()->getPreferredLanguage($manager->getSupportedLocales());
-                            if ($preferred) {
-                                $locale = $preferred;
-                            }
-                        }
-
-                        return redirect('/'.$locale.'/');
-                    })->name('localized.root')
+                    Route::get('/', $rootRedirect)
+                        ->name('localized.root')
                         ->middleware($setLocale);
 
                     Route::group([
                         'prefix' => '',
                         'as' => 'localized.root.',
-                        'middleware' => [$redirectToLocalized],
+                        'middleware' => [$unlocalizedRedirect],
                     ], function () use ($callback) {
                         $callback();
                     });
@@ -122,7 +65,7 @@ class LocalizationServiceProvider extends ServiceProvider
                 foreach ($locales as $locale) {
                     $middleware = [$setLocale];
 
-                    if ($hideDefault && $locale === $defaultLocale) {
+                    if ($hideDefault && $locale === config('full-translation.default_locale', 'en')) {
                         $middleware[] = $hideDefaultLocale;
                     }
 
@@ -143,13 +86,13 @@ class LocalizationServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/full-translation.php' => config_path('full-translation.php'),
-        ], 'translations-config');
+        ], 'full-translation-config');
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'full-translation');
 
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/full-translation'),
-        ], 'translations-views');
+        ], 'full-translation-views');
 
         $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
 
