@@ -86,13 +86,13 @@ class LocalizationServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/full-translation.php' => config_path('full-translation.php'),
-        ], 'full-translation-config');
+        ], 'translations-config');
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'full-translation');
 
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/full-translation'),
-        ], 'full-translation-views');
+        ], 'translations-views');
 
         $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
 
