@@ -379,6 +379,38 @@ You can publish and customize it:
 php artisan vendor:publish --tag=translations-views
 ```
 
+For a fully custom switcher, render the available locales yourself:
+
+```blade
+@php
+    $locales = \Pikbdesigns\FullTranslation\Facades\FullLocalization::getAvailableLocales();
+    $current = \Pikbdesigns\FullTranslation\Facades\FullLocalization::getLocale();
+    $requestUrl = request()->getRequestUri();
+@endphp
+
+<div class="language-switcher">
+    @foreach ($locales as $locale)
+        @if ($locale['code'] !== $current)
+            <a href="{{ \Pikbdesigns\FullTranslation\Facades\FullLocalization::getLocalizedUrl($locale['code'], $requestUrl, true) }}"
+               hreflang="{{ $locale['code'] }}"
+               title="{{ $locale['native'] ?? $locale['name'] }}">
+                {{ $locale['native'] ?? strtoupper($locale['code']) }}
+            </a>
+        @else
+            <span class="active" aria-current="page">
+                {{ $locale['native'] ?? strtoupper($locale['code']) }}
+            </span>
+        @endif
+    @endforeach
+</div>
+```
+
+Each link points to the current page translated into that locale (via `getLocalizedUrl()`), with the active locale rendered as a `<span>` instead of a link. In [non-prefixed mode](#non-prefixed-mode), swap the `href` for the locale switching endpoint instead:
+
+```blade
+<a href="{{ route('locale.switch', $locale['code']) }}">{{ $locale['native'] ?? strtoupper($locale['code']) }}</a>
+```
+
 ### Locale switching endpoint
 
 The package ships an invokable `LocaleController` that validates the requested locale, sets it as active, persists it to the session and cookie (respecting `use_session` / `use_cookie`), and redirects back.
