@@ -12,6 +12,8 @@ use Pikbdesigns\FullTranslation\TranslationManager;
  * @method static array getSupportedLocales()
  * @method static array getSupportedLocalesWithMetadata()
  * @method static bool isDefaultLocale(string $locale)
+ * @method static bool isHiddenDefault(string $locale)
+ * @method static bool checkLocaleInSupportedLocales(string $locale)
  * @method static array getAvailableLocales()
  * @method static array getLocalesOrder()
  * @method static array getUrlsIgnored()

@@ -21,12 +21,17 @@ Add locale prefixes (`/en/about`, `/es/about`) to your Laravel app with minimal 
   - [Ignoring URLs and methods](#ignoring-urls-and-methods)
 - [Route Registration](#route-registration)
   - [Route::localized() macro](#routelocalized-macro)
+  - [Non-prefixed mode](#non-prefixed-mode)
+  - [Route name strategy](#route-name-strategy)
   - [hide_default_locale behavior](#hide_default_locale-behavior)
   - [Manual approach](#manual-approach)
+- [Config Presets](#config-presets)
 - [Helper Functions](#helper-functions)
 - [Facade](#facade)
 - [Language Switcher](#language-switcher)
+  - [Locale switching endpoint](#locale-switching-endpoint)
   - [Custom ordering](#custom-ordering)
+- [Mixed Stacks (Web + API)](#mixed-stacks-web--api)
 - [Translation Export & Inspect Commands](#translation-export--inspect-commands)
   - [Export translations](#export-translations)
   - [Inspect translations](#inspect-translations)
@@ -34,7 +39,9 @@ Add locale prefixes (`/en/about`, `/es/about`) to your Laravel app with minimal 
   - [JSON files](#json-files)
   - [Route translations](#route-translations)
   - [Manual strings](#manual-strings)
-- [Testing](#testing)`r`n- [Changelog](#changelog)`r`n- [License](#license)
+- [Testing](#testing)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Requirements
 
@@ -106,6 +113,8 @@ The `native` name is used in the language switcher when available. The `regional
 | Key | Default | Description |
 |-----|---------|-------------|
 | `route_prefix` | `'{locale}'` | Placeholder used in route prefixes |
+| `localized_urls` | `true` | When `true`, `Route::localized()` prefixes routes with the locale. When `false`, routes are registered without prefixes (see [Non-prefixed mode](#non-prefixed-mode)) |
+| `route_name_strategy` | `'localized'` | Route naming: `'localized'` (`localized.en.about`) or `'original'` (keep your names, see [Route name strategy](#route-name-strategy)) |
 | `urls_ignored` | `[]` | URL patterns to skip locale processing (e.g., `['/nova', '/nova/*']`) |
 | `http_methods_ignored` | `['POST', 'PUT', 'PATCH', 'DELETE']` | HTTP methods that skip locale processing |
 
@@ -183,6 +192,47 @@ Route::localized(function () {
 
 This generates named routes like `localized.en.about`, `localized.es.about`, etc. The `SetLocale` middleware is automatically applied to each group.
 
+### Non-prefixed mode
+
+Set `localized_urls` to `false` when your application does **not** want locale prefixes in URLs. This is common for admin panels, dashboards, or apps that serve one locale per user (e.g., an authenticated user's preferred language).
+
+```php
+'localized_urls' => false,
+```
+
+With this mode:
+
+```php
+Route::localized(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+```
+
+- Routes are registered at `/dashboard` (no locale prefix)
+- Only the `SetLocale` middleware is applied; the locale is resolved from the session, cookie, or `Accept-Language` header
+- Routes are named `localized.dashboard`
+- The redirect middlewares (`LocaleSessionRedirect`, `LocaleCookieRedirect`, `UnlocalizedRedirect`, `RootRedirect`) are not registered, since there is no localized URL to redirect to
+
+Use the [locale switching endpoint](#locale-switching-endpoint) to let users change their locale in this mode.
+
+### Route name strategy
+
+By default, `Route::localized()` names routes `localized.{locale}.{name}` (e.g., `localized.en.about`). Set `route_name_strategy` to `'original'` to keep the names you give routes in the callback:
+
+```php
+'route_name_strategy' => 'original',
+```
+
+```php
+Route::localized(function () {
+    Route::get('/about', [PageController::class, 'about'])->name('about');
+});
+```
+
+This registers the routes under the plain name `about` (plus `localized.en.about`, `localized.es.about`, etc. under the `'localized'` strategy).
+
+> **Caveat:** a Laravel route name maps to exactly one route. When you register the same name across several locale groups, `route('about')` resolves to the **last-registered** locale's URL. Prefer the default `'localized'` strategy for new apps, and use `'original'` only when migrating an existing app and you need `route('name')` calls to keep working.
+
 ### hide_default_locale behavior
 
 When `hide_default_locale` is `false` (default):
@@ -207,6 +257,44 @@ Route::prefix('{locale}')
         Route::get('/about', [PageController::class, 'about'])->name('about');
     });
 ```
+
+## Config Presets
+
+Common configurations are just a few config keys. Pick the preset that matches your app.
+
+### SEO / public site (locale-prefixed URLs)
+
+```php
+'localized_urls' => true,
+'route_name_strategy' => 'localized',
+'hide_default_locale' => false,
+'use_session' => true,
+'use_cookie' => true,
+'use_accept_language' => true,
+```
+
+### Admin panel / per-user locale (no URL prefixes)
+
+```php
+'localized_urls' => false,
+'route_name_strategy' => 'original',
+'hide_default_locale' => false,
+'use_session' => true,
+'use_cookie' => true,
+'use_accept_language' => false,
+```
+
+### Hybrid (public web localized, API untouched)
+
+Keep `localized_urls => true` and exclude API paths from locale processing:
+
+```php
+'localized_urls' => true,
+'urls_ignored' => ['/api', '/api/*', '/nova', '/nova/*'],
+'http_methods_ignored' => ['POST', 'PUT', 'PATCH', 'DELETE'],
+```
+
+See [Mixed Stacks (Web + API)](#mixed-stacks-web--api) for the full pattern.
 
 ## Helper Functions
 
@@ -237,36 +325,42 @@ localizedView('pages.home', [], 'es'); // tries pages.home.es
 
 ## Facade
 
+The facade is registered as `FullLocalization`:
+
 ```php
-use Pikbdesigns\FullTranslation\Facades\Localization;
+use Pikbdesigns\FullTranslation\Facades\FullLocalization;
 
 // Basic
-Localization::getLocale();                          // 'en'
-Localization::setLocale('es');
-Localization::getDefaultLocale();                   // 'en'
-Localization::isDefaultLocale('en');                // true
+FullLocalization::getLocale();                          // 'en'
+FullLocalization::setLocale('es');
+FullLocalization::getDefaultLocale();                   // 'en'
+FullLocalization::isDefaultLocale('en');                // true
 
 // Locales
-Localization::getSupportedLocales();                // ['en', 'es', 'fr']
-Localization::getSupportedLocalesWithMetadata();    // ['en' => ['name' => 'English', ...], ...]
-Localization::getAvailableLocales();                // [['name' => 'English', 'code' => 'en', 'native' => 'English'], ...]
-Localization::getLocalesOrder();                    // []
+FullLocalization::getSupportedLocales();                // ['en', 'es', 'fr']
+FullLocalization::getSupportedLocalesWithMetadata();    // ['en' => ['name' => 'English', ...], ...]
+FullLocalization::getAvailableLocales();                // [['name' => 'English', 'code' => 'en', 'native' => 'English'], ...]
+FullLocalization::getLocalesOrder();                    // []
 
 // URLs
-Localization::getLocalizedUrl('es');                // https://example.com/es/about
-Localization::getLocalizedUrl('es', '/faq', false); // '/es/faq'
-Localization::getNonLocalizedUrl('/es/about');       // '/about'
+FullLocalization::getLocalizedUrl('es');                // https://example.com/es/about
+FullLocalization::getLocalizedUrl('es', '/faq', false); // '/es/faq'
+FullLocalization::getNonLocalizedUrl('/es/about');       // '/about'
 
 // Route translations
-Localization::getRouteTranslations('es');            // require lang/es/routes.php
-Localization::getTranslatedRoute('about', 'es');    // 'acerca-de'
-Localization::mapLocale('pt-br');                   // 'pt_BR' (if mapped)
+FullLocalization::getRouteTranslations('es');            // require lang/es/routes.php
+FullLocalization::getTranslatedRoute('about', 'es');    // 'acerca-de'
+FullLocalization::mapLocale('pt-br');                   // 'pt_BR' (if mapped)
+
+// Locale checks
+FullLocalization::checkLocaleInSupportedLocales('es');  // true
+FullLocalization::isHiddenDefault('en');                // false
 
 // Ignoring
-Localization::getUrlsIgnored();                     // ['/nova', '/nova/*']
-Localization::getHttpMethodsIgnored();              // ['POST', 'PUT', 'PATCH', 'DELETE']
-Localization::isUrlIgnored('/nova/dashboard');      // true
-Localization::isHttpMethodIgnored('POST');          // true
+FullLocalization::getUrlsIgnored();                     // ['/nova', '/nova/*']
+FullLocalization::getHttpMethodsIgnored();              // ['POST', 'PUT', 'PATCH', 'DELETE']
+FullLocalization::isUrlIgnored('/nova/dashboard');      // true
+FullLocalization::isHttpMethodIgnored('POST');          // true
 ```
 
 ## Language Switcher
@@ -285,6 +379,28 @@ You can publish and customize it:
 php artisan vendor:publish --tag=translations-views
 ```
 
+### Locale switching endpoint
+
+The package ships an invokable `LocaleController` that validates the requested locale, sets it as active, persists it to the session and cookie (respecting `use_session` / `use_cookie`), and redirects back.
+
+Register the route (for example in `routes/web.php`):
+
+```php
+use Pikbdesigns\FullTranslation\Http\Controllers\LocaleController;
+
+Route::get('/locale/{locale}', LocaleController::class)->name('locale.switch');
+```
+
+The controller returns a `404` for locales not listed in `supported_locales`. Wire it into the language switcher:
+
+```blade
+@foreach (\Pikbdesigns\FullTranslation\Facades\FullLocalization::getAvailableLocales() as $locale)
+    <a href="{{ route('locale.switch', $locale['code']) }}">{{ $locale['native'] ?? strtoupper($locale['code']) }}</a>
+@endforeach
+```
+
+This endpoint is especially useful in [non-prefixed mode](#non-prefixed-mode), where there are no localized URLs to link to.
+
 ### Custom ordering
 
 Use `locales_order` to control the display order:
@@ -292,6 +408,59 @@ Use `locales_order` to control the display order:
 ```php
 'locales_order' => ['es', 'fr', 'en'],
 ```
+
+## Mixed Stacks (Web + API)
+
+Many apps combine localized web routes with API routes that must not be localized. The pattern is simple: keep `localized_urls => true` for the web, and exclude the API paths from locale processing via `urls_ignored`.
+
+### Config
+
+```php
+'localized_urls' => true,
+'urls_ignored' => ['/api', '/api/*', '/nova', '/nova/*'],
+'http_methods_ignored' => ['POST', 'PUT', 'PATCH', 'DELETE'],
+```
+
+### Routes
+
+Register API routes outside `Route::localized()` (typically in `routes/api.php`):
+
+```php
+// routes/api.php - not localized
+Route::prefix('v1')->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+});
+```
+
+```php
+// routes/web.php - localized
+Route::localized(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+```
+
+### Middleware ordering (Laravel 11+)
+
+Laravel 11+ registers middleware in `bootstrap/app.php`. Apply `SetLocale` in the global `web` group so locale detection runs before your route middleware. If you registered the redirect middlewares, keep them after `SetLocale`:
+
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'locale.set' => \Pikbdesigns\FullTranslation\Http\Middleware\SetLocale::class,
+        'locale.session' => \Pikbdesigns\FullTranslation\Http\Middleware\LocaleSessionRedirect::class,
+        'locale.cookie' => \Pikbdesigns\FullTranslation\Http\Middleware\LocaleCookieRedirect::class,
+        'locale.hide' => \Pikbdesigns\FullTranslation\Http\Middleware\HideDefaultLocaleInUrl::class,
+    ]);
+
+    $middleware->web(append: [
+        'locale.set',
+        'locale.session',
+        'locale.cookie',
+    ]);
+})
+```
+
+The `urls_ignored` patterns make `SetLocale` skip the API paths automatically, so API responses are never locale-redirected and always resolve their own locale (e.g., from an `Accept-Language` header or token).
 
 ## Translation Export & Inspect Commands
 
@@ -373,7 +542,7 @@ return [
 ];
 ```
 
-Used by `RouteStringTranslator` and accessible via `Localization::getTranslatedRoute()`.
+Used by `RouteStringTranslator` and accessible via `FullLocalization::getTranslatedRoute()`.
 
 ### Manual strings
 

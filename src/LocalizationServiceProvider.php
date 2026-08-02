@@ -33,6 +33,8 @@ class LocalizationServiceProvider extends ServiceProvider
             Route::macro('localized', function (callable $callback) {
                 $locales = app(TranslationManager::class)->getSupportedLocales();
                 $hideDefault = config('full-translation.hide_default_locale', false);
+                $localizedUrls = config('full-translation.localized_urls', true);
+                $preserveNames = config('full-translation.route_name_strategy', 'localized') === 'original';
 
                 $setLocale = SetLocale::class;
                 $hideDefaultLocale = HideDefaultLocaleInUrl::class;
@@ -40,10 +42,24 @@ class LocalizationServiceProvider extends ServiceProvider
                 $unlocalizedRedirect = UnlocalizedRedirect::class;
                 $rootRedirect = RootRedirect::class;
 
+                if (! $localizedUrls) {
+                    Route::group([
+                        'prefix' => '',
+                        'as' => $preserveNames ? '' : 'localized.',
+                        'middleware' => [$setLocale],
+                    ], function () use ($callback) {
+                        $callback();
+                    });
+
+                    return;
+                }
+
+                $namePrefix = $preserveNames ? '' : 'localized.';
+
                 if ($hideDefault) {
                     Route::group([
                         'prefix' => '',
-                        'as' => 'localized.root.',
+                        'as' => $preserveNames ? '' : 'localized.root.',
                         'middleware' => [$setDefaultLocale],
                     ], function () use ($callback) {
                         $callback();
@@ -55,7 +71,7 @@ class LocalizationServiceProvider extends ServiceProvider
 
                     Route::group([
                         'prefix' => '',
-                        'as' => 'localized.root.',
+                        'as' => $preserveNames ? '' : 'localized.root.',
                         'middleware' => [$unlocalizedRedirect],
                     ], function () use ($callback) {
                         $callback();
@@ -71,7 +87,7 @@ class LocalizationServiceProvider extends ServiceProvider
 
                     Route::group([
                         'prefix' => $locale,
-                        'as' => 'localized.'.$locale.'.',
+                        'as' => $preserveNames ? '' : 'localized.'.$locale.'.',
                         'middleware' => $middleware,
                     ], function () use ($callback, $locale) {
                         app()->setLocale($locale);

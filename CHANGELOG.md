@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-08-02
+
+### Added
+
+- `localized_urls` config key: when `false`, `Route::localized()` registers routes without locale prefixes and applies only `SetLocale` (for admin panels / per-user locale apps)
+- `route_name_strategy` config key: `'localized'` (default, `localized.{locale}.{name}`) or `'original'` (keep the route names you give in the callback)
+- Invokable `LocaleController` for a locale switching endpoint (validates the locale, persists to session/cookie, redirects back)
+- `checkLocaleInSupportedLocales()` and `isHiddenDefault()` documented on the `FullLocalization` facade
+
+### Fixed
+
+- README facade example used the wrong class name (`Facades\Localization`); corrected to `Facades\FullLocalization`
+- README table of contents contained corrupted newlines
+
 ## [0.1.3] - 2026-07-25
 
 ### Fixed

@@ -235,3 +235,85 @@ it('serves localized content after redirect from unlocalized URL', function () {
     $response->assertSuccessful();
     $response->assertJson(['locale' => 'en']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Non-Prefixed Mode: localized_urls = false
+|--------------------------------------------------------------------------
+*/
+
+it('registers non-prefixed routes when localized_urls is false', function () {
+    config(['full-translation.localized_urls' => false]);
+
+    Route::localized(function () {
+        Route::get('/about', fn () => 'about')->name('about');
+    });
+
+    $routes = Route::getRoutes()->getRoutes();
+    $routeNames = array_map(fn ($route) => $route->getName(), $routes);
+
+    expect($routeNames)->toContain('localized.about');
+    expect($routeNames)->not->toContain('localized.en.about');
+    expect($routeNames)->not->toContain('localized.root');
+});
+
+it('serves content at non-prefixed routes when localized_urls is false', function () {
+    config(['full-translation.localized_urls' => false]);
+
+    Route::localized(function () {
+        Route::get('/about', fn () => response()->json(['locale' => app()->getLocale()]))->name('about');
+    });
+
+    $response = $this->get('/about');
+    $response->assertSuccessful();
+    $response->assertJson(['locale' => 'en']);
+});
+
+it('resolves session locale on non-prefixed routes', function () {
+    config(['full-translation.localized_urls' => false]);
+
+    Route::localized(function () {
+        Route::get('/about', fn () => response()->json(['locale' => app()->getLocale()]))->name('about');
+    });
+
+    $this->session(['locale' => 'es']);
+
+    $response = $this->get('/about');
+    $response->assertSuccessful();
+    $response->assertJson(['locale' => 'es']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Route Name Strategy: route_name_strategy = original
+|--------------------------------------------------------------------------
+*/
+
+it('preserves original route names when route_name_strategy is original', function () {
+    config(['full-translation.route_name_strategy' => 'original']);
+
+    Route::localized(function () {
+        Route::get('/about', fn () => 'about')->name('about');
+    });
+
+    $routes = Route::getRoutes()->getRoutes();
+    $routeNames = array_map(fn ($route) => $route->getName(), $routes);
+
+    expect($routeNames)->toContain('about');
+    expect($routeNames)->not->toContain('localized.en.about');
+});
+
+it('preserves original route names in non-prefixed mode', function () {
+    config(['full-translation.localized_urls' => false]);
+    config(['full-translation.route_name_strategy' => 'original']);
+
+    Route::localized(function () {
+        Route::get('/about', fn () => 'about')->name('about');
+    });
+
+    $routes = Route::getRoutes()->getRoutes();
+    $routeNames = array_map(fn ($route) => $route->getName(), $routes);
+
+    expect($routeNames)->toContain('about');
+    expect($routeNames)->not->toContain('localized.about');
+});

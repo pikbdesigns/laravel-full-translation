@@ -416,6 +416,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Localized URLs
+    |--------------------------------------------------------------------------
+    |
+    | When true (default), the Route::localized() macro prefixes routes with
+    | the active locale (e.g. /en/about, /es/about).
+    |
+    | When false, routes are registered without a locale prefix and only the
+    | SetLocale middleware is applied. The locale is resolved from the
+    | session, cookie, or Accept-Language header. Useful for admin panels,
+    | dashboards, or applications that serve one locale per user.
+    |
+    */
+    'localized_urls' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Name Strategy
+    |--------------------------------------------------------------------------
+    |
+    | Controls how Route::localized() names routes.
+    |
+    | - "localized": routes are named localized.{locale}.{name}
+    |   (e.g. localized.en.about). Each locale keeps its own unique name.
+    |
+    | - "original": routes keep the names you give them in the callback
+    |   (e.g. about). This eases migrating existing apps, but route('about')
+    |   resolves to the last-registered locale route, so localized URL
+    |   generation for other locales is not possible via named routes.
+    |
+    */
+    'route_name_strategy' => 'localized',
+
+    /*
+    |--------------------------------------------------------------------------
     | Custom Scan Helpers
     |--------------------------------------------------------------------------
     */
